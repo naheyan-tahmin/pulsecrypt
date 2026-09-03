@@ -1,11 +1,16 @@
-export default function RecordDetail({ record, exchanges, onShare, shareError }) {
+export default function RecordDetail({ record, exchanges, onShare, shareError, currentUserId }) {
   if (!record) return null;
+  const isOwner = currentUserId != null && record.owner_id === currentUserId;
+  const complete = (exchanges || []).filter((x) => x.status === "complete");
+
+  const otherParty = (x) => (x.initiator_id === record.owner_id ? x.peer_id : x.initiator_id);
+
   return (
     <article className="stack">
       <header>
         <h2>{record.title}</h2>
         <p className="muted">
-          Record #{record.id} · owner {record.owner_id} · author {record.author_id}
+          Record #{record.id} · owner user {record.owner_id} · author user {record.author_id}
           {record.shared ? " · received via DH share" : ""}
         </p>
       </header>
@@ -13,28 +18,56 @@ export default function RecordDetail({ record, exchanges, onShare, shareError })
         <strong>Diagnosis:</strong> {record.diagnosis || "—"}
       </p>
       <pre className="note">{record.body}</pre>
-      {!record.shared && (
-        <form
-          className="row"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const exchange_id = Number(new FormData(e.target).get("exchange_id"));
-            onShare(exchange_id);
-          }}
-        >
-          <select name="exchange_id" required>
-            <option value="">Complete DH channel…</option>
-            {(exchanges || [])
-              .filter((x) => x.status === "complete")
-              .map((x) => (
-                <option key={x.id} value={x.id}>
-                  Exchange #{x.id} with user {x.initiator_id === record.owner_id ? x.peer_id : x.initiator_id}
-                </option>
-              ))}
-          </select>
-          <button type="submit">Share with doctor</button>
-        </form>
+
+      {record.shared && (
+        <p className="muted">
+          This copy was shared with you. You can read it, but only the owner can share it onward.
+        </p>
       )}
+
+      {isOwner && !record.shared && (
+        <div className="callout">
+          <p>
+            <strong>Share this chart note</strong> — you are the owner. Diffie–Hellman only proves you and
+            the other account have a shared channel. Then PulseCrypt re-encrypts this note with{" "}
+            <em>their</em> ECC public key so they can decrypt it. The other person does not click Share;
+            they later see the note in Records marked <em>shared</em>.
+          </p>
+          {complete.length === 0 ? (
+            <p className="muted">
+              No completed DH channel yet. On Dashboard, start DH with the doctor (or accept theirs), wait
+              until status is <strong>complete</strong>, then come back here.
+            </p>
+          ) : (
+            <form
+              className="row"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const exchange_id = Number(new FormData(e.target).get("exchange_id"));
+                onShare(exchange_id);
+              }}
+            >
+              <select name="exchange_id" required>
+                <option value="">Give access to…</option>
+                {complete.map((x) => (
+                  <option key={x.id} value={x.id}>
+                    User {otherParty(x)} (DH exchange #{x.id})
+                  </option>
+                ))}
+              </select>
+              <button type="submit">Share with selected user</button>
+            </form>
+          )}
+        </div>
+      )}
+
+      {!isOwner && !record.shared && (
+        <p className="muted">
+          Only user {record.owner_id} (the record owner) can share this note. If you are the doctor, ask
+          the patient to share it after you both complete DH on the Dashboard.
+        </p>
+      )}
+
       {shareError && <p className="error">{shareError}</p>}
     </article>
   );

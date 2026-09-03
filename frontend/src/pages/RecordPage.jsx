@@ -4,8 +4,17 @@ import RecordList from "../components/records/RecordList";
 import RecordEditor from "../components/records/RecordEditor";
 import RecordDetail from "../components/records/RecordDetail";
 import { createRecord, getRecord, listDh, listRecords, shareRecord, updateRecord } from "../api/recordApi";
+import { useAuth } from "../context/AuthContext";
+
+function apiError(e, fallback) {
+  const d = e.response?.data?.detail;
+  if (typeof d === "string") return d;
+  if (Array.isArray(d)) return d.map((x) => x.msg || JSON.stringify(x)).join("; ");
+  return fallback;
+}
 
 export default function RecordPage() {
+  const { profile } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const [records, setRecords] = useState([]);
@@ -43,7 +52,7 @@ export default function RecordPage() {
       await reload();
       navigate(`/records/${data.id}`);
     } catch (e) {
-      setError(e.response?.data?.detail || "Create failed");
+      setError(apiError(e, "Create failed"));
     }
   };
 
@@ -55,7 +64,7 @@ export default function RecordPage() {
       setMode("detail");
       await reload();
     } catch (e) {
-      setError(e.response?.data?.detail || "Update failed");
+      setError(apiError(e, "Update failed"));
     }
   };
 
@@ -66,7 +75,7 @@ export default function RecordPage() {
       setShareError("");
       alert("Record re-encrypted to the recipient ECC key after DH confirmation.");
     } catch (e) {
-      setShareError(e.response?.data?.detail || "Share failed");
+      setShareError(apiError(e, "Share failed"));
     }
   };
 
@@ -83,7 +92,13 @@ export default function RecordPage() {
         {mode === "create" && <RecordEditor onSubmit={onCreate} error={error} />}
         {mode === "detail" && current && (
           <>
-            <RecordDetail record={current} exchanges={exchanges} onShare={onShare} shareError={shareError} />
+            <RecordDetail
+              record={current}
+              exchanges={exchanges}
+              onShare={onShare}
+              shareError={shareError}
+              currentUserId={profile?.id}
+            />
             <h3>Edit</h3>
             <RecordEditor initial={current} onSubmit={onUpdate} error={error} />
           </>

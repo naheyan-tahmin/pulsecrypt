@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from ..models.user import User
-from ..models.medical_record import MedicalRecord
+from ..models.medical_record import MedicalRecord, RecordShare
 from ..repositories.record_repository import RecordRepository
 from ..services.encryption_service import EncryptionService
 from ..services.key_service import KeyService
