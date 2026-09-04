@@ -32,6 +32,14 @@ class AuthService:
         uh = username_hash(req.username)
         if self.users.get_by_username_hash(uh):
             raise AuthError("username already exists", 409)
+        # Additional check: prevent registration with different case versions of existing usernames
+        for existing_user in self.users.list_all():
+            try:
+                existing_username = self.enc.dec_pii(existing_user.id, existing_user.username_enc)
+                if existing_username.lower() == req.username.strip().lower() and existing_username != req.username.strip():
+                    raise AuthError("username already exists (case variant)", 409)
+            except Exception:
+                continue
         stored = hash_password_for_storage(req.password, settings.password_iterations)
         user = User(
             username_hash=uh,
@@ -91,6 +99,13 @@ class AuthService:
         if not user or not user.is_active:
             raise AuthError("invalid credentials")
         if not verify_password(password, user.password_stored):
+            raise AuthError("invalid credentials")
+        # Verify exact username match (case-sensitive) for security
+        try:
+            stored_username = self.enc.dec_pii(user.id, user.username_enc)
+            if stored_username != username.strip():
+                raise AuthError("invalid credentials")
+        except Exception:
             raise AuthError("invalid credentials")
         token = self.sessions.issue(user.id, "pre2fa")
         return TokenResponse(access_token=token, stage="pre2fa")
