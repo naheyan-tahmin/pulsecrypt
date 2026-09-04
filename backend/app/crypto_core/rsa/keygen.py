@@ -38,10 +38,7 @@ class RSAKeyPair:
 
 
 def _generate_prime(bit_length: int) -> int:
-    """
-    Generate a random odd bit_length-bit number and test it for
-    primality until one passes Miller-Rabin.
-    """
+   
     if bit_length < 2:
         raise ValueError("bit_length must be >= 2")
 
@@ -55,11 +52,7 @@ def _generate_prime(bit_length: int) -> int:
 
 
 def generate_keypair(key_size_bits: int = 2048) -> RSAKeyPair:
-    """
-    Generate an RSA key pair with modulus n of approximately
-    `key_size_bits` bits. p and q are each key_size_bits // 2 bits,
-    matching standard RSA key generation practice.
-    """
+    
     if key_size_bits < 512:
         raise ValueError("key_size_bits should be at least 512 for any real use")
 

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import RecordList from "../components/records/RecordList";
 import RecordEditor from "../components/records/RecordEditor";
 import RecordDetail from "../components/records/RecordDetail";
-import { createRecord, getRecord, listDh, listRecords, shareRecord, updateRecord } from "../api/recordApi";
+import { createRecord, getRecord, listDh, listRecords, shareRecord, updateRecord, deleteRecord } from "../api/recordApi";
 import { useAuth } from "../context/AuthContext";
 
 function apiError(e, fallback) {
@@ -23,6 +23,8 @@ export default function RecordPage() {
   const [mode, setMode] = useState("list");
   const [error, setError] = useState("");
   const [shareError, setShareError] = useState("");
+  const [shareSuccess, setShareSuccess] = useState("");
+  const [isSharing, setIsSharing] = useState(false);
 
   const reload = () => listRecords().then((r) => setRecords(r.data));
 
@@ -70,12 +72,31 @@ export default function RecordPage() {
 
   const onShare = async (exchange_id) => {
     setShareError("");
+    setShareSuccess("");
+    setIsSharing(true);
     try {
       await shareRecord({ record_id: Number(id), exchange_id });
+      setShareSuccess("Record successfully shared with the user!");
       setShareError("");
-      alert("Record re-encrypted to the recipient ECC key after DH confirmation.");
     } catch (e) {
       setShareError(apiError(e, "Share failed"));
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const onEditRecord = (recordId) => {
+    navigate(`/records/${recordId}`);
+  };
+
+  const onDeleteRecord = async (recordId) => {
+    if (!confirm("Are you sure you want to delete this record?")) return;
+    setError("");
+    try {
+      await deleteRecord(recordId);
+      await reload();
+    } catch (e) {
+      setError(apiError(e, "Delete failed"));
     }
   };
 
@@ -88,7 +109,15 @@ export default function RecordPage() {
             New note
           </button>
         </div>
-        {mode === "list" && <RecordList records={records} />}
+        {mode === "list" && (
+          <RecordList 
+            records={records} 
+            currentUserId={profile?.id}
+            userRole={profile?.role}
+            onEdit={onEditRecord}
+            onDelete={onDeleteRecord}
+          />
+        )}
         {mode === "create" && <RecordEditor onSubmit={onCreate} error={error} />}
         {mode === "detail" && current && (
           <>
@@ -97,10 +126,18 @@ export default function RecordPage() {
               exchanges={exchanges}
               onShare={onShare}
               shareError={shareError}
+              shareSuccess={shareSuccess}
+              isSharing={isSharing}
               currentUserId={profile?.id}
+              userRole={profile?.role}
+              onDelete={onDeleteRecord}
             />
-            <h3>Edit</h3>
-            <RecordEditor initial={current} onSubmit={onUpdate} error={error} />
+            {(current.owner_id === profile?.id || profile?.role === "admin") && (
+              <>
+                <h3>Edit</h3>
+                <RecordEditor initial={current} onSubmit={onUpdate} error={error} />
+              </>
+            )}
           </>
         )}
         {error && mode === "list" && <p className="error">{error}</p>}

@@ -1,0 +1,1 @@
+python -c "import pyotp; print(pyotp.TOTP('OEPISRH3MO7HXSS5GNR2T52OWLF6VMQC').now())"

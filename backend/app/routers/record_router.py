@@ -39,6 +39,18 @@ def update_record(
     record_id: int,
     body: RecordUpdate,
     user: User = Depends(get_current_user),
+    role: str = Depends(get_current_role),
     db: Session = Depends(get_db),
 ):
-    return RecordService(db).update(user, record_id, body)
+    return RecordService(db).update(user, role, record_id, body)
+
+
+@router.delete("/{record_id}")
+def delete_record(
+    record_id: int,
+    user: User = Depends(get_current_user),
+    role: str = Depends(get_current_role),
+    db: Session = Depends(get_db),
+):
+    RecordService(db).delete(user, role, record_id)
+    return {"message": "record deleted"}

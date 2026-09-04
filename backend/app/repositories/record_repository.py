@@ -44,3 +44,13 @@ class RecordRepository:
         self.db.add(profile)
         self.db.flush()
         return profile
+
+    def delete_shares_for_record(self, record_id: int) -> None:
+        self.db.query(RecordShare).filter(RecordShare.record_id == record_id).delete()
+
+    def get_existing_share(self, record_id: int, to_user_id: int) -> RecordShare | None:
+        return (
+            self.db.query(RecordShare)
+            .filter(RecordShare.record_id == record_id, RecordShare.to_user_id == to_user_id)
+            .first()
+        )

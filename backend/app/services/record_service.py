@@ -78,11 +78,12 @@ class RecordService:
                 return self._to_view(rec, payload, shared=True)
         raise ForbiddenError("no access to this record")
 
-    def update(self, actor: User, record_id: int, data: RecordUpdate) -> RecordView:
+    def update(self, actor: User, actor_role: str, record_id: int, data: RecordUpdate) -> RecordView:
         rec = self.repo.get(record_id)
         if not rec:
             raise NotFoundError("record not found")
-        if rec.owner_id != actor.id and rec.author_id != actor.id:
+        # Only owner can edit, admin can edit any
+        if rec.owner_id != actor.id and actor_role != "admin":
             raise ForbiddenError("cannot edit this record")
         payload = self.enc.dec_record(rec.owner_id, rec.payload_enc, rec.mac_tag)
         if data.title is not None:
@@ -97,6 +98,18 @@ class RecordService:
         rec.updated_at = datetime.now(timezone.utc)
         self.db.commit()
         return self._to_view(rec, payload)
+
+    def delete(self, actor: User, actor_role: str, record_id: int) -> None:
+        rec = self.repo.get(record_id)
+        if not rec:
+            raise NotFoundError("record not found")
+        # Owner can delete, admin can delete any
+        if rec.owner_id != actor.id and actor_role != "admin":
+            raise ForbiddenError("cannot delete this record")
+        # Delete associated shares first to avoid foreign key constraint violation
+        self.repo.delete_shares_for_record(record_id)
+        self.db.delete(rec)
+        self.db.commit()
 
     def start_dh(self, actor: User, peer_id: int) -> DhView:
         if peer_id == actor.id:
@@ -123,6 +136,12 @@ class RecordService:
             raise NotFoundError("DH exchange not found")
         peer_id = ex.peer_id if ex.initiator_id == actor.id else ex.initiator_id
         self.keys.require_complete_dh(exchange_id, actor.id, peer_id)
+        
+        # Check if already shared with this user
+        existing_share = self.repo.get_existing_share(record_id, peer_id)
+        if existing_share:
+            raise ForbiddenError("record already shared with this user")
+        
         payload = self.enc.dec_record(actor.id, rec.payload_enc, rec.mac_tag)
         ct, tag = self.enc.enc_record_for(peer_id, payload)
         share = RecordShare(

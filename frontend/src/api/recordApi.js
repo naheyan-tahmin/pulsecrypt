@@ -4,6 +4,7 @@ export const listRecords = () => axiosClient.get("/records");
 export const createRecord = (payload) => axiosClient.post("/records", payload);
 export const getRecord = (id) => axiosClient.get(`/records/${id}`);
 export const updateRecord = (id, payload) => axiosClient.put(`/records/${id}`, payload);
+export const deleteRecord = (id) => axiosClient.delete(`/records/${id}`);
 export const startDh = (peer_user_id) => axiosClient.post("/keys/dh/start", { peer_user_id });
 export const acceptDh = (exchange_id) => axiosClient.post("/keys/dh/accept", { exchange_id });
 export const listDh = () => axiosClient.get("/keys/dh");

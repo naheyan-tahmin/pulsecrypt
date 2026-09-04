@@ -1,8 +1,4 @@
-"""
-HMAC constructed from our SHA-1 / SHA-256 implementations (RFC 2104).
 
-No hmac or hashlib imports.
-"""
 
 from __future__ import annotations
 

@@ -1,6 +1,7 @@
-export default function RecordDetail({ record, exchanges, onShare, shareError, currentUserId }) {
+export default function RecordDetail({ record, exchanges, onShare, shareError, shareSuccess, isSharing, currentUserId, userRole, onDelete }) {
   if (!record) return null;
   const isOwner = currentUserId != null && record.owner_id === currentUserId;
+  const canDelete = isOwner || (userRole === "admin");
   const complete = (exchanges || []).filter((x) => x.status === "complete");
 
   const otherParty = (x) => (x.initiator_id === record.owner_id ? x.peer_id : x.initiator_id);
@@ -47,7 +48,7 @@ export default function RecordDetail({ record, exchanges, onShare, shareError, c
                 onShare(exchange_id);
               }}
             >
-              <select name="exchange_id" required>
+              <select name="exchange_id" required disabled={isSharing}>
                 <option value="">Give access to…</option>
                 {complete.map((x) => (
                   <option key={x.id} value={x.id}>
@@ -55,7 +56,9 @@ export default function RecordDetail({ record, exchanges, onShare, shareError, c
                   </option>
                 ))}
               </select>
-              <button type="submit">Share with selected user</button>
+              <button type="submit" disabled={isSharing}>
+                {isSharing ? "Sharing..." : "Share with selected user"}
+              </button>
             </form>
           )}
         </div>
@@ -68,7 +71,20 @@ export default function RecordDetail({ record, exchanges, onShare, shareError, c
         </p>
       )}
 
+      {canDelete && onDelete && (
+        <div className="row">
+          <button 
+            type="button" 
+            className="danger" 
+            onClick={() => onDelete(record.id)}
+          >
+            Delete this record
+          </button>
+        </div>
+      )}
+
       {shareError && <p className="error">{shareError}</p>}
+      {shareSuccess && <p className="success">{shareSuccess}</p>}
     </article>
   );
 }

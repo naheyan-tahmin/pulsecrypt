@@ -1,19 +1,3 @@
-"""
-RSA encryption / decryption over byte strings.
-
-Textbook RSA only encrypts a single integer smaller than the modulus,
-so this module adds:
-  1. Randomized padding (PKCS#1 v1.5 style, built here from scratch --
-     not imported from any crypto library) so identical plaintexts
-     produce different ciphertexts and so we can detect corruption.
-  2. Block splitting, so callers can encrypt fields of arbitrary
-     length (names, addresses, notes) rather than being limited to
-     one RSA-block's worth of bytes.
-
-This module is used for PII-class fields per the project's
-"different asymmetric algorithm per data class" requirement --
-medical records go through the ECC module instead.
-"""
 
 from __future__ import annotations
 import secrets
@@ -76,11 +60,7 @@ def _chunk_plain_size(block_size: int) -> int:
 
 
 def encrypt(message: bytes, public_key: RSAPublicKey) -> bytes:
-    """
-    Encrypt an arbitrary-length byte string under an RSA public key.
-    Output format: [4-byte big-endian chunk count] || chunk_1 || chunk_2 || ...
-    where each chunk is exactly key_byte_length bytes.
-    """
+   
     block_size = _key_byte_length(public_key.n)
     plain_chunk_size = _chunk_plain_size(block_size)
 

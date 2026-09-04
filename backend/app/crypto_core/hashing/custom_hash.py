@@ -1,10 +1,4 @@
-"""
-From-scratch Merkle–Damgård hash functions.
 
-This module does not import hashlib. SHA-1 is implemented because RFC 6238
-TOTP authenticators expect HMAC-SHA1. SHA-256 (PulseHash-256) is the
-workhorse for password stretching, HMAC-SHA256 integrity tags, and KDFs.
-"""
 
 from __future__ import annotations
 

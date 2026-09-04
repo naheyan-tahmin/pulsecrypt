@@ -1,0 +1,1 @@
+Patient-1:python -c "import pyotp; print(pyotp.TOTP('6PVO4JB6FDMRZTITU6XO2GJZNXLH5TAC').now())"

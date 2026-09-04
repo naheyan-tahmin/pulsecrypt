@@ -1,10 +1,3 @@
-"""
-RFC 6238 TOTP using from-scratch HMAC-SHA1 (not pyotp).
-
-Compatible with Google Authenticator / Aegis when the secret is shown
-as base32 and the URI uses SHA1, 6 digits, 30-second steps.
-"""
-
 from __future__ import annotations
 import secrets
 import time
