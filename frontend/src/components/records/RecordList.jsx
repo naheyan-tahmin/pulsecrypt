@@ -12,9 +12,14 @@ export default function RecordList({ records, currentUserId, userRole, onEdit, o
         return (
           <li key={`${r.id}-${r.shared}`} className="record-item">
             <Link to={`/records/${r.id}`}>
-              <strong>{r.title || "Untitled note"}</strong>
-              <span>{r.diagnosis || "No diagnosis tag"}</span>
-              {r.shared && <em className="pill">shared</em>}
+              <div className="record-info">
+                <strong>{r.title || "Untitled note"}</strong>
+                <span className="muted"> by {r.author_username || `user ${r.author_id}`}</span>
+              </div>
+              <div className="record-meta">
+                <span>{r.diagnosis || "No diagnosis tag"}</span>
+                {r.shared && <span className="pill">shared</span>}
+              </div>
             </Link>
             <div className="record-actions">
               {canEdit && (

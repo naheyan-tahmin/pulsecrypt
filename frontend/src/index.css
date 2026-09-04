@@ -70,12 +70,15 @@ code, pre.note { display: block; white-space: pre-wrap; background: #07141c; pad
 .record-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
 .record-list li { border: 1px solid var(--line); border-radius: 10px; }
 .record-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; }
-.record-item a { flex: 1; color: inherit; text-decoration: none; }
+.record-item a { flex: 1; color: inherit; text-decoration: none; display: flex; justify-content: space-between; align-items: center; }
+.record-info { display: flex; flex-direction: column; gap: 0.2rem; }
+.record-meta { display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-end; }
+.record-item a span { font-size: 0.85rem; }
 .record-actions { display: flex; gap: 0.5rem; }
 .record-actions button { padding: 0.3rem 0.6rem; font-size: 0.9rem; }
 .record-actions button.danger { color: var(--danger); border-color: var(--danger); }
 .record-actions button.danger:hover { background: var(--danger); color: #04221a; }
-.pill { font-size: 0.75rem; color: var(--accent-2); }
+.pill { font-size: 0.75rem; color: var(--accent-2); font-style: normal; }
 .plain { list-style: none; padding: 0; display: grid; gap: 0.5rem; }
 .plain li { display: flex; gap: 0.5rem; align-items: center; justify-content: space-between; }
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }

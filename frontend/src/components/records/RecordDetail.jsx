@@ -11,7 +11,7 @@ export default function RecordDetail({ record, exchanges, onShare, shareError, s
       <header>
         <h2>{record.title}</h2>
         <p className="muted">
-          Record #{record.id} · owner user {record.owner_id} · author user {record.author_id}
+          Record #{record.id} · owner {record.owner_username || `user ${record.owner_id}`} · author {record.author_username || `user ${record.author_id}`}
           {record.shared ? " · received via DH share" : ""}
         </p>
       </header>
@@ -50,11 +50,17 @@ export default function RecordDetail({ record, exchanges, onShare, shareError, s
             >
               <select name="exchange_id" required disabled={isSharing}>
                 <option value="">Give access to…</option>
-                {complete.map((x) => (
-                  <option key={x.id} value={x.id}>
-                    User {otherParty(x)} (DH exchange #{x.id})
-                  </option>
-                ))}
+                {complete.map((x) => {
+                  const otherPartyId = otherParty(x);
+                  const otherPartyUsername = x.initiator_id === record.owner_id 
+                    ? x.peer_username 
+                    : x.initiator_username;
+                  return (
+                    <option key={x.id} value={x.id}>
+                      {otherPartyUsername || `User ${otherPartyId}`} (DH exchange #{x.id})
+                    </option>
+                  );
+                })}
               </select>
               <button type="submit" disabled={isSharing}>
                 {isSharing ? "Sharing..." : "Share with selected user"}
@@ -66,7 +72,7 @@ export default function RecordDetail({ record, exchanges, onShare, shareError, s
 
       {!isOwner && !record.shared && (
         <p className="muted">
-          Only user {record.owner_id} (the record owner) can share this note. If you are the doctor, ask
+          Only {record.owner_username || `user ${record.owner_id}`} (the record owner) can share this note. If you are the doctor, ask
           the patient to share it after you both complete DH on the Dashboard.
         </p>
       )}

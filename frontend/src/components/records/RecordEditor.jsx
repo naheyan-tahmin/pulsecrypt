@@ -29,7 +29,7 @@ export default function RecordEditor({ initial, onSubmit, error }) {
       </label>
       <label>
         Patient user id (doctors only, optional)
-        <input value={ownerId} onChange={(e) => setOwnerId(e.target.value)} placeholder="Leave blank for yourself" />
+        <input value={ownerId} onChange={(e) => setOwnerId(e.target.value)} placeholder="Leave blank for yourself" title="Enter patient user ID" />
       </label>
       {error && <p className="error">{error}</p>}
       <button type="submit">Save (ECC-encrypted)</button>

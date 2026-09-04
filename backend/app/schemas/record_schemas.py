@@ -19,6 +19,8 @@ class RecordView(BaseModel):
     id: int
     owner_id: int
     author_id: int
+    owner_username: str | None = None
+    author_username: str | None = None
     title: str
     body: str
     diagnosis: str
@@ -39,6 +41,8 @@ class DhView(BaseModel):
     id: int
     initiator_id: int
     peer_id: int
+    initiator_username: str | None = None
+    peer_username: str | None = None
     status: str
     params: dict
     initiator_public: str

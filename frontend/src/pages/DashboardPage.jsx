@@ -76,7 +76,7 @@ export default function DashboardPage() {
             <ul className="plain">
               {exchanges.map((x) => (
                 <li key={x.id}>
-                  #{x.id} {x.status} · {x.initiator_id} → {x.peer_id}
+                  #{x.id} {x.status} · {x.initiator_username || x.initiator_id} → {x.peer_username || x.peer_id}
                   {x.status === "pending" && x.peer_id === profile?.id && (
                     <button type="button" onClick={() => onAccept(x.id)}>
                       Accept

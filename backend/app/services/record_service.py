@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from ..models.user import User
 from ..models.medical_record import MedicalRecord, RecordShare
 from ..repositories.record_repository import RecordRepository
+from ..repositories.user_repository import UserRepository
 from ..services.encryption_service import EncryptionService
 from ..services.key_service import KeyService
 from ..schemas.record_schemas import RecordCreate, RecordUpdate, RecordView, DhView
@@ -17,14 +18,26 @@ class RecordService:
     def __init__(self, db: Session):
         self.db = db
         self.repo = RecordRepository(db)
+        self.user_repo = UserRepository(db)
         self.enc = EncryptionService(db)
         self.keys = KeyService(db)
+
+    def _get_username(self, user_id: int) -> str | None:
+        user = self.user_repo.get_by_id(user_id)
+        if not user:
+            return None
+        try:
+            return self.enc.dec_pii(user_id, user.username_enc)
+        except Exception:
+            return None
 
     def _to_view(self, rec: MedicalRecord, payload: dict, shared: bool = False) -> RecordView:
         return RecordView(
             id=rec.id,
             owner_id=rec.owner_id,
             author_id=rec.author_id,
+            owner_username=self._get_username(rec.owner_id),
+            author_username=self._get_username(rec.author_id),
             title=payload.get("title", ""),
             body=payload.get("body", ""),
             diagnosis=payload.get("diagnosis", ""),
@@ -162,6 +175,8 @@ class RecordService:
             id=ex.id,
             initiator_id=ex.initiator_id,
             peer_id=ex.peer_id,
+            initiator_username=self._get_username(ex.initiator_id),
+            peer_username=self._get_username(ex.peer_id),
             status=ex.status,
             params=params,
             initiator_public=ex.initiator_public,
